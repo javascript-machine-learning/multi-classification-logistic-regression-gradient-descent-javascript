@@ -1,6 +1,5 @@
 import mnist from 'mnist';
 import math from 'mathjs';
-import { getDimensionSize, pushVector } from 'mathjs-util';
 
 const TRAINING_SET_SIZE = 1000;
 const TEST_SET_SIZE = 1000;
@@ -22,8 +21,8 @@ function main(trainingSetSize, testSetSize, alpha, iterations, lambda) {
   let X = training.map(v => [ ...v.input ]);
   let y = training.map(v => [ v.output.reverse().reduce(toDecimal, 0) ]);
 
-  let m = getDimensionSize(y, 1);
-  let n = getDimensionSize(X, 2);
+  let m = y.length;
+  let n = X[0].length;
 
   console.log('Size of training set (m): ', m);
   console.log('Pixels in one picture (n): ', n);
@@ -34,7 +33,7 @@ function main(trainingSetSize, testSetSize, alpha, iterations, lambda) {
   console.log('Part 1: Cost Function ...\n');
 
   // Add Intercept Term
-  X = pushVector(X, 0, Array(m).fill().map(() => [1]));
+  X = math.concat(Array(m).fill().map(() => [1]), X);
 
   let theta = Array(n + 1).fill().map(() => [0]);
   let { cost: untrainedCost, grad } = costFunction(theta, X, y);
@@ -57,10 +56,10 @@ function main(trainingSetSize, testSetSize, alpha, iterations, lambda) {
   let XTest = test.map(v => [ ...v.input ]);
   let yTest = test.map(v => [ v.output.reverse().reduce(toDecimal, 0) ]);
 
-  let mTest = getDimensionSize(XTest, 1);
+  let mTest = XTest.length;
 
   // Add Intercept Term
-  XTest = pushVector(XTest, 0, Array(mTest).fill().map(() => [1]));
+  XTest = math.concat(Array(m).fill().map(() => [1]), XTest);
 
   const predicted = predict(XTest, yTest, allTheta);
   const correctPredicted = predicted.filter(p => p.predict === p.real).length;
@@ -78,7 +77,7 @@ function sigmoid(z) {
 }
 
 function costFunction(theta, X, y) {
-  const m = getDimensionSize(y, 1);
+  const m = y.length;
 
   let h = sigmoid(math.eval(`X * theta`, {
     X,
@@ -104,8 +103,8 @@ function costFunction(theta, X, y) {
 function oneVsAllGradientDescent(X, y, ALPHA, ITERATIONS, LAMBDA) {
   const CLASSIFIERS = 10;
 
-  const m = getDimensionSize(y, 1);
-  const n = getDimensionSize(X, 2);
+  const m = y.length;
+  const n = X[0].length;
 
   const allTheta = [];
 
